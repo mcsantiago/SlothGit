@@ -13,12 +13,12 @@ pub fn initialize() -> std::io::Result<()> {
     };
     match fs::create_dir(OBJECTS_DIR) {
         Ok(_) => (),
-        Err(_) => println!("Error creating {}/.slothgit/objects", path.display())
+        Err(_) => ()
     };
     Ok(())
 }
 
-pub fn store_hash_object(file: Option<String>, writeToDb: bool) -> std::io::Result<()> {
+pub fn store_hash_object(file: Option<String>, write_to_db: bool) -> std::io::Result<()> {
     let mut hasher = Sha1::new();
 
     match file {
@@ -27,7 +27,7 @@ pub fn store_hash_object(file: Option<String>, writeToDb: bool) -> std::io::Resu
             hasher.update(&contents);
             let oid = hasher.finalize();
             let output_path = format!("{}/{:#01x}", OBJECTS_DIR, oid);
-            if writeToDb {
+            if write_to_db {
                 match fs::create_dir(OBJECTS_DIR) {
                     Ok(_) => (),
                     Err(_) => (),
@@ -35,13 +35,23 @@ pub fn store_hash_object(file: Option<String>, writeToDb: bool) -> std::io::Resu
                 match fs::write(&output_path, contents) {
                     Ok(_) => (),
                     Err(e) => println!("Error writing to {}: {}", output_path, e),
-                }
+                };
             };
-            println!("{:#01x}", oid)
+            println!("{:#01x}", oid);
+            Ok(())
         },
-        None => { () }
+        None => Ok(())
     }
-
-    Ok(())
 }
 
+pub fn read_hash_object(input: Option<String>) -> std::io::Result<()> {
+    match input {
+        Some(oid) => {
+            let path: String = format!("{}/{}", OBJECTS_DIR, oid);
+            let contents: String = fs::read_to_string(path).expect("Unable to find {oid}");
+            println!("{contents}");
+            Ok(())
+        },
+        None => Ok(())
+    }
+}

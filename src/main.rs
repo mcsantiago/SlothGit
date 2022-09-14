@@ -18,6 +18,7 @@ fn main() {
     let _result: Result<(), std::io::Error> = match command.as_ref().map(String::as_ref) {
         Some("init") => data::initialize(),
         Some("hash-object") => data::store_hash_object(operand, true),
+        Some("cat-file") => data::read_hash_object(operand),
         Some("--help") | Some("help") => display_help_menu(),
         _  => display_help_menu(),
     };
