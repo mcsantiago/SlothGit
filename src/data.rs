@@ -11,10 +11,7 @@ pub fn initialize() -> std::io::Result<()> {
         Ok(_) => println!("Initialized empty SlothGit repository in {}/.slothgit", path.display()),
         Err(_) => println!("Reinitialized existing SlothGit repository in {}/.slothgit", path.display())
     };
-    match fs::create_dir(OBJECTS_DIR) {
-        Ok(_) => (),
-        Err(_) => ()
-    };
+    let _ = fs::create_dir(OBJECTS_DIR);
     Ok(())
 }
 
@@ -29,10 +26,7 @@ pub fn store_hash_object(file: Option<String>, write_to_db: bool, object_type: &
             let oid = hasher.finalize();
             let output_path = format!("{}/{:#01x}", OBJECTS_DIR, oid);
             if write_to_db {
-                match fs::create_dir(OBJECTS_DIR) {
-                    Ok(_) => (),
-                    Err(_) => (),
-                };
+                let _ = fs::create_dir(OBJECTS_DIR);
                 match fs::write(&output_path, contents) {
                     Ok(_) => (),
                     Err(e) => println!("Error writing to {}: {}", output_path, e),
