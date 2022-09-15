@@ -18,12 +18,13 @@ pub fn initialize() -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn store_hash_object(file: Option<String>, write_to_db: bool) -> std::io::Result<()> {
+pub fn store_hash_object(file: Option<String>, write_to_db: bool, object_type: &str) -> std::io::Result<()> {
     let mut hasher = Sha1::new();
 
     match file {
         Some(file_path) => {
-            let contents: String = fs::read_to_string(file_path).expect("Unable to read file {file_path}");
+            let mut contents: String = fs::read_to_string(file_path).expect("Unable to read file {file_path}");
+            contents = format!("{object_type}\x00{contents}");
             hasher.update(&contents);
             let oid = hasher.finalize();
             let output_path = format!("{}/{:#01x}", OBJECTS_DIR, oid);
@@ -44,12 +45,19 @@ pub fn store_hash_object(file: Option<String>, write_to_db: bool) -> std::io::Re
     }
 }
 
-pub fn read_hash_object(input: Option<String>) -> std::io::Result<()> {
+pub fn read_hash_object(input: Option<String>, _alleged_object_type: &str, _expected: bool) -> std::io::Result<()> {
     match input {
         Some(oid) => {
             let path: String = format!("{}/{}", OBJECTS_DIR, oid);
             let contents: String = fs::read_to_string(path).expect("Unable to find {oid}");
-            println!("{contents}");
+            match contents.find('\x00') {
+                Some(pos) => {
+                    let object_type = contents.get(0..pos);
+                    println!("Type: {}", object_type.unwrap());
+                    println!("{}", contents.get(pos..).unwrap());
+                },
+                None => println!("Unable to find object type: null byte not found"),
+            }
             Ok(())
         },
         None => Ok(())
