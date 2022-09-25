@@ -57,3 +57,42 @@ pub fn read_hash_object(input: Option<String>, _alleged_object_type: &str, _expe
         None => Ok(())
     }
 }
+
+pub mod base {
+    use std::fs;
+    use std::path::Path;
+    pub fn write_tree(dir: &Path) -> std::io::Result<()> {
+        if dir.is_dir() {
+            for entry in fs::read_dir(dir)? {
+                let entry = entry?;
+                let path = entry.path();
+                if is_ignored(&path) {
+                    continue;
+                }
+                if path.is_dir() {
+                    write_tree(&path)?;
+                } else {
+                    match fs::read_to_string(&path) {
+                        Ok(contents) => {
+                            println!("{}", contents);
+                        },
+                        Err(e) => {
+                            println!("Error while reading string {}", e);
+                        }
+                    };
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn is_ignored(path: &Path) -> bool {
+        match path.to_str() {
+            Some(path_str) => path_str.contains(".slothgit/"),
+            None => {
+                println!("Ignoring none UTF-8 path");
+                false
+            }
+        }
+    }
+}

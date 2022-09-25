@@ -1,4 +1,5 @@
 use std::env;
+use std::path;
 mod data;
 
 fn display_help_menu() -> std::io::Result<()> {
@@ -11,6 +12,12 @@ fn display_help_menu() -> std::io::Result<()> {
     Ok(())
 }
 
+fn write_tree(path: &str) -> std::io::Result<()> {
+    let path = path::Path::new(path);
+    let _ = data::base::write_tree(path);
+    Ok(())
+}
+
 fn main() {
     // Parse out the command. If no command exists, display the help menu
     let command : Option<String> = env::args().nth(1);
@@ -19,6 +26,7 @@ fn main() {
         Some("init") => data::initialize(),
         Some("hash-object") => data::store_hash_object(operand, true, "blob"),
         Some("cat-file") => data::read_hash_object(operand, "blob", true),
+        Some("write-tree") => write_tree("./"),
         Some("--help") | Some("help") => display_help_menu(),
         _  => display_help_menu(),
     };
